@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt';
 
 import jwt from 'jsonwebtoken'
 
-import Joi from 'joi';
+import Joi  from 'joi';
 
 import userInterface from "../store/userInterface";
 
@@ -28,6 +28,7 @@ export default class userController {
     public async create(req: Request, res: Response) {
 
         const schema = Joi.object().keys({
+            // _id: Joi.string().optional(),
             firstname: Joi.string().required(),
             lastname: Joi.string().required(),
             email: Joi.string().required(),
@@ -50,7 +51,8 @@ export default class userController {
 
         const encryptedPassword = await bcrypt.hash(password, 10);
 
-        const imageupload = req.file;
+        // eslint-disable-next-line prefer-const
+        let imageupload = req.file;
 
         const filename = imageupload.filename;
 
@@ -71,11 +73,12 @@ export default class userController {
             const email = await storeUser.findByEmail(userAttributes.email);
 
             if(email){
-                return SendResponse(res,StatusCodeEnum.BAD_REQUEST,ErrorMessageEnum.USER_EXIST);
+                return SendResponse(res,ErrorMessageEnum.USER_EXIST,StatusCodeEnum.BAD_REQUEST);
                 // return res.status(400).send({msg:"Email already taken please try another one"});
             }
-
-            const user = await storeUser.createUser(userAttributes);
+            let user:userInterface
+             // eslint-disable-next-line prefer-const
+             user = await storeUser.createUser(userAttributes);
 
             return SendResponse(res, user, StatusCodeEnum.OK);
         } catch (e) {
@@ -97,7 +100,9 @@ export default class userController {
 
         if (params.error) {
             console.log(params.error);
-            return res.status(400).send(params.error);
+            // return res.status(400).send(params.error);
+            return SendResponse(res,params.error,StatusCodeEnum.BAD_REQUEST);
+
         }
 
         const { email, password } = params.value;
@@ -114,7 +119,8 @@ export default class userController {
 
             if (!user) {
 
-                return res.status(400).send({ msg: "Email does not match" });
+                // return res.status(400).send({ msg: "Email does not match" });
+                return SendResponse(res,ErrorMessageEnum.NOT_EXIST,StatusCodeEnum.BAD_REQUEST);
 
             } else {
                 const hashpassword = user.password;
@@ -125,11 +131,13 @@ export default class userController {
 
                     const secret = process.env.JWT_SECRET;
 
-                    const token = jwt.sign({ id: user.id,role:user.role }, secret, {
+                    const token = jwt.sign({ id: user._id,role:user.role }, secret, {
                         expiresIn: '2h',
                     });
+                    
+                    return SendResponse(res,token,ErrorMessageEnum.LOGGED_IN,StatusCodeEnum.OK);
 
-                    return res.status(200).send({ msg: "Logged in Successfully",user:user.role, token: token});
+                    // return res.status(200).send({ msg: "Logged in Successfully",user:user.role, token: token});
 
                 } else {
                     return res.status(400).send({ msg: "Credentials does not match" });
@@ -166,9 +174,7 @@ export default class userController {
         
         for (let i = 0; i < req.files.length; i++) {
             const files = req.files[i];
-
-            // Upload the local image to Cloudinary
-            
+           
             // and get image url as response
 
             // eslint-disable-next-line no-var

@@ -4,10 +4,17 @@ import userInterface from "../store/userInterface";
 
 import multiImages from '../store/imagesInterface'
 
+import { nanoid } from "nanoid";
+
 export const schema = mongoose.Schema;
 
 const userSchema = new schema<userInterface>({
     
+    _id:{
+        type: String,
+        required:false,
+        default: () => nanoid(),
+    },
     firstname:{
         type:String,
         required:true,

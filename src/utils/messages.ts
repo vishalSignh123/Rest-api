@@ -5,5 +5,7 @@ enum ErrorMessageEnum {
     INVALID_EMAIL_OR_CODE = "Invalid Email or Code!!",
     SET_YOUR_PASSWORD = "Please set you password first!!",
     USER_EXIST = "User with same Email already exist",
+    NOT_EXIST = "Email does not match",
+    LOGGED_IN ="Logged in Successfully",
 }
 export default ErrorMessageEnum;
